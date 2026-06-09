@@ -438,7 +438,7 @@ export default function CanvasStage({
   if (isMobile) {
     return (
       <main className={styles.mobileStage} aria-label="HINC AS canvas content">
-        <LogoAnchor x={0} y={0} logoColour={logoColour} className={styles.mobileLogo} />
+        <LogoAnchor x={0} y={0} logoColour={logoColour} className={styles.mobileLogo} autoPlay />
         {assets.map((asset, index) => {
           const placement = layout.find((entry) => entry.id === asset.id)
           return (
@@ -510,6 +510,7 @@ export default function CanvasStage({
             height={mainLogoAnchor.height}
             logoColour={logoColour}
             className={styles.logoAnchor}
+            autoPlay
           />
           {logoAnchors.slice(1).map((anchor) => (
             <LogoAnchor

@@ -35,7 +35,7 @@ import type {
   MouseEventHandler,
   PointerEventHandler,
 } from 'react'
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   motion,
   useAnimationControls,
@@ -49,6 +49,7 @@ interface LogoAnchorProps {
   width?: number
   height?: number
   logoColour: string
+  autoPlay?: boolean
   className?: string
 }
 
@@ -171,6 +172,7 @@ export default function LogoAnchor({
   width = 598,
   height = 302,
   logoColour,
+  autoPlay = false,
   className,
 }: LogoAnchorProps) {
   const bodyControls = useAnimationControls()
@@ -180,16 +182,11 @@ export default function LogoAnchor({
   const tailControls = useAnimationControls()
   const legControls = useAnimationControls()
   const prefersReducedMotion = useReducedMotion()
+  const hasAutoPlayedRef = useRef(false)
 
   const [isAnimating, setIsAnimating] = useState(false)
 
-  const handlePointerDown: PointerEventHandler<HTMLButtonElement> = (event) => {
-    event.stopPropagation()
-  }
-
-  const handleClick: MouseEventHandler<HTMLButtonElement> = async (event) => {
-    event.stopPropagation()
-
+  const playSequence = useCallback(async () => {
     if (isAnimating) {
       return
     }
@@ -216,6 +213,37 @@ export default function LogoAnchor({
       legControls.set({ rotate: 0, x: 0, y: 0 })
       setIsAnimating(false)
     }
+  }, [
+    bodyControls,
+    eyeControls,
+    headControls,
+    isAnimating,
+    legControls,
+    prefersReducedMotion,
+    snoutControls,
+    tailControls,
+  ])
+
+  useEffect(() => {
+    if (!autoPlay || hasAutoPlayedRef.current) {
+      return
+    }
+
+    hasAutoPlayedRef.current = true
+    const timer = window.setTimeout(() => {
+      void playSequence()
+    }, 650)
+
+    return () => window.clearTimeout(timer)
+  }, [autoPlay, playSequence])
+
+  const handlePointerDown: PointerEventHandler<HTMLButtonElement> = (event) => {
+    event.stopPropagation()
+  }
+
+  const handleClick: MouseEventHandler<HTMLButtonElement> = async (event) => {
+    event.stopPropagation()
+    await playSequence()
   }
 
   return (
