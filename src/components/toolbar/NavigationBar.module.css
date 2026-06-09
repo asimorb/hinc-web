@@ -49,6 +49,9 @@
   line-height: 1;
 }
 
+.desktopControl {
+}
+
 .itemSlider {
   position: relative;
   display: grid;
@@ -93,38 +96,101 @@
   transform: scale(1.9);
 }
 
-@media (max-width: 760px) {
+.sliderKnob {
+  display: none;
+}
+
+@media (max-width: 900px), (pointer: coarse) {
   .nav {
-    left: calc(16px + env(safe-area-inset-left, 0px));
-    top: calc(16px + env(safe-area-inset-top, 0px));
-    grid-auto-flow: column;
-    max-width: calc(100vw - var(--space-4));
-    overflow-x: auto;
+    left: auto;
+    right: calc(26px + env(safe-area-inset-right, 0px));
+    top: calc(170px + env(safe-area-inset-top, 0px));
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    gap: 0;
     transform: none;
   }
 
+  .desktopControl {
+    display: none !important;
+  }
+
   .itemSlider {
-    grid-auto-flow: column;
-    align-items: center;
-    padding: 0 10px;
+    display: block;
+    width: 36px;
+    height: 100%;
+    padding: 0;
+    touch-action: none;
+  }
+
+  .nav .sliderDot {
+    position: absolute;
+    left: 50%;
+    top: var(--dot-progress);
+    width: 5px !important;
+    height: 5px !important;
+    overflow: visible;
+    background: var(--color-accent) !important;
+    transform: translate(-50%, -50%);
+  }
+
+  .nav .sliderDot::before {
+    position: absolute;
+    inset: -10px;
+    display: block;
+    width: auto;
+    height: auto;
+    border-radius: 999px;
+    background: transparent;
+    content: '';
+  }
+
+  .nav .sliderDot:hover,
+  .nav .sliderDot:focus-visible,
+  .nav .sliderDot[aria-current='location'] {
+    transform: translate(-50%, -50%);
+  }
+
+  .sliderKnob {
+    position: absolute;
+    left: 50%;
+    top: var(--slider-progress);
+    z-index: 4;
+    display: block;
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: var(--color-accent);
+    box-shadow: 0 0 0 4px var(--color-bg);
+    content: '';
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    transition:
+      top 160ms ease,
+      opacity 160ms ease;
+  }
+
+  .itemSlider.isDragging .sliderKnob {
+    opacity: 0.45;
+    transition: opacity 120ms ease;
   }
 
   .itemSlider::before {
-    top: 50%;
-    bottom: auto;
-    left: 7px;
-    right: 7px;
-    width: auto;
-    height: 2px;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    right: auto;
+    width: 1px;
+    height: auto;
     background:
       repeating-linear-gradient(
-        to right,
+        to bottom,
         var(--color-accent) 0,
         var(--color-accent) 3px,
         transparent 3px,
-        transparent 6px
+        transparent 9px
       );
-    transform: translateY(-50%);
+    transform: translateX(-50%);
   }
 
 }

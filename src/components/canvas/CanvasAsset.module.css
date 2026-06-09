@@ -354,32 +354,3 @@
   height: 0;
   pointer-events: none;
 }
-
-@media (max-width: 760px) {
-  .asset {
-    position: relative;
-    left: auto;
-    top: auto;
-    height: auto;
-    min-height: unset;
-    transform: none !important;
-    touch-action: auto;
-  }
-
-  .image {
-    height: auto;
-  }
-
-  .graphic {
-    display: none;
-  }
-
-  .etymology {
-    font-size: clamp(2.5rem, 13vw, 4.2rem);
-  }
-
-  .quote blockquote,
-  .surveyPrompt::after {
-    font-size: clamp(1.5rem, 8vw, 2.5rem);
-  }
-}

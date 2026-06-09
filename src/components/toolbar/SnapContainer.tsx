@@ -19,6 +19,7 @@ export const snapPositions = [
 interface SnapContainerProps {
   position: SnapPosition
   onSnap: (position: SnapPosition) => void
+  isLocked?: boolean
   children: ReactNode
 }
 
@@ -61,6 +62,7 @@ const distance = (a: { x: number; y: number }, b: { x: number; y: number }) =>
 export default function SnapContainer({
   position,
   onSnap,
+  isLocked = false,
   children,
 }: SnapContainerProps) {
   const snapRef = useRef<HTMLDivElement>(null)
@@ -96,11 +98,15 @@ export default function SnapContainer({
     <motion.div
       ref={snapRef}
       className={styles.snap}
-      drag
+      drag={!isLocked}
       dragMomentum={false}
       animate={target}
       transition={{ type: 'spring', damping: 25, stiffness: 300 }}
       onDragEnd={(_, info) => {
+        if (isLocked) {
+          return
+        }
+
         const current = {
           x: target.x + info.offset.x,
           y: target.y + info.offset.y,

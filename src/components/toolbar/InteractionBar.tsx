@@ -37,34 +37,38 @@ export default function InteractionBar({
   onSnapChange,
 }: InteractionBarProps) {
   return (
-    <SnapContainer position={snapPosition} onSnap={onSnapChange}>
+    <SnapContainer position={snapPosition} onSnap={onSnapChange} isLocked={isMobile}>
       <div className={styles.bar} aria-label="Canvas interaction tools">
-        <button
-          type="button"
-          aria-pressed={activeTool === 'select'}
-          disabled={isMobile}
-          title="Selection tool"
-          onClick={() => onToolChange(activeTool === 'select' ? null : 'select')}
-        >
-          <span
-            className={styles.icon}
-            style={iconStyle('/fonts/near_me_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg')}
-            aria-hidden="true"
-          />
-        </button>
-        <button
-          type="button"
-          aria-pressed={activeTool === 'erase'}
-          disabled={isMobile}
-          title="Eraser tool"
-          onClick={() => onToolChange(activeTool === 'erase' ? null : 'erase')}
-        >
-          <span
-            className={styles.icon}
-            style={iconStyle('/fonts/eraser_size_2_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg')}
-            aria-hidden="true"
-          />
-        </button>
+        {isMobile ? null : (
+          <>
+            <button
+              type="button"
+              className={styles.desktopOnly}
+              aria-pressed={activeTool === 'select'}
+              title="Selection tool"
+              onClick={() => onToolChange(activeTool === 'select' ? null : 'select')}
+            >
+              <span
+                className={styles.icon}
+                style={iconStyle('/fonts/near_me_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg')}
+                aria-hidden="true"
+              />
+            </button>
+            <button
+              type="button"
+              className={styles.desktopOnly}
+              aria-pressed={activeTool === 'erase'}
+              title="Eraser tool"
+              onClick={() => onToolChange(activeTool === 'erase' ? null : 'erase')}
+            >
+              <span
+                className={styles.icon}
+                style={iconStyle('/fonts/eraser_size_2_24dp_1F1F1F_FILL0_wght400_GRAD0_opsz24.svg')}
+                aria-hidden="true"
+              />
+            </button>
+          </>
+        )}
         <button type="button" title="Cycle font" onClick={onFontChange}>
           <span
             className={styles.icon}

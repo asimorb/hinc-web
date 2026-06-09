@@ -11,15 +11,42 @@ import { generateLayout } from '@/lib/layoutEngine'
 import { getNextCaseCombo, getNextColourCombo, getNextFontCombo } from '@/lib/themes'
 import { zones, type ZoneId } from '@/lib/zones'
 
+const getViewportMobileState = () => {
+  if (typeof window === 'undefined') {
+    return false
+  }
+
+  const viewportWidth = window.visualViewport?.width ?? window.innerWidth
+  const screenWidth = Math.min(window.screen.width, window.screen.height)
+  const hasMobilePointer =
+    window.matchMedia('(pointer: coarse)').matches ||
+    window.matchMedia('(hover: none)').matches
+  const hasMobileUserAgent = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
+
+  return (
+    viewportWidth <= 1200 ||
+    screenWidth <= 1200 ||
+    hasMobilePointer ||
+    hasMobileUserAgent
+  )
+}
+
 const useIsMobile = () => {
   const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
-    const media = window.matchMedia('(max-width: 760px)')
-    const update = () => setIsMobile(media.matches)
+    const update = () => setIsMobile(getViewportMobileState())
+    const visualViewport = window.visualViewport
+
     update()
-    media.addEventListener('change', update)
-    return () => media.removeEventListener('change', update)
+    window.addEventListener('resize', update)
+    window.addEventListener('orientationchange', update)
+    visualViewport?.addEventListener('resize', update)
+    return () => {
+      window.removeEventListener('resize', update)
+      window.removeEventListener('orientationchange', update)
+      visualViewport?.removeEventListener('resize', update)
+    }
   }, [])
 
   return isMobile
@@ -108,6 +135,7 @@ function HincCanvasInner() {
       <NavigationBar
         zoom={state.zoom}
         activeTargetId={activeNavigationTargetId}
+        isMobile={isMobile}
         onPanOut={handleReturnHome}
         onZoomChange={handleZoomChange}
         onNavigateToAsset={handleNavigateToAsset}
@@ -152,6 +180,16 @@ function HincCanvasInner() {
 }
 
 export default function HincCanvas() {
+  const [hasMounted, setHasMounted] = useState(false)
+
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+
+  if (!hasMounted) {
+    return null
+  }
+
   return (
     <CanvasStoreProvider>
       <HincCanvasInner />

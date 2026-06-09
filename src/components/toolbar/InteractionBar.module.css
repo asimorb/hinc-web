@@ -50,6 +50,9 @@
   text-align: center;
 }
 
+.desktopOnly {
+}
+
 .bar button[aria-pressed='true'] {
   color: var(--color-text);
   transform: scale(1.08);
@@ -60,9 +63,13 @@
   cursor: not-allowed;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px), (pointer: coarse) {
   .bar {
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .desktopOnly {
+    display: none !important;
   }
 
   .bar button {

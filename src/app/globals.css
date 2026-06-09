@@ -184,8 +184,8 @@ textarea:focus-visible {
   outline-offset: 3px;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px), (pointer: coarse) {
   body {
-    overflow: auto;
+    overflow: hidden;
   }
 }

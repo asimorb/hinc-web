@@ -7,7 +7,7 @@ import {
   useReducedMotion,
   type Transition,
 } from 'framer-motion'
-import { assets, logoAnchors, mainLogoAnchor } from '@/lib/assets'
+import { assets, logoAnchors, mainLogoAnchor, type AssetDefinition } from '@/lib/assets'
 import type { ActiveTool } from '@/lib/canvasStore'
 import type { AssetPlacement } from '@/lib/layoutEngine'
 import { colourCombinations } from '@/lib/themes'
@@ -25,6 +25,12 @@ import styles from './CanvasStage.module.css'
 const MIN_ZOOM = 0.07
 const MAX_ZOOM = 2
 const WHEEL_ZOOM_STEP = 0.05
+const MOBILE_OPENING_FRAME = {
+  x: 5030,
+  y: 1350,
+  width: 1500,
+  height: 2050,
+} as const
 
 interface CanvasStageProps {
   layout: AssetPlacement[]
@@ -77,6 +83,71 @@ const getCanvasCenterPosition = (
   y: (viewportHeight - CANVAS_HEIGHT * scale) / 2,
 })
 
+const getFrameScale = (
+  frame: { width: number; height: number },
+  viewportWidth: number,
+  viewportHeight: number,
+  insetX: number,
+  insetY: number,
+) =>
+  Math.min(
+    (viewportWidth - insetX * 2) / frame.width,
+    (viewportHeight - insetY * 2) / frame.height,
+  )
+
+const getFramedPosition = (
+  frame: { x: number; y: number; width: number; height: number },
+  viewportWidth: number,
+  viewportHeight: number,
+  scale: number,
+) => ({
+  x: viewportWidth / 2 - (frame.x + frame.width / 2) * scale,
+  y: viewportHeight / 2 - (frame.y + frame.height / 2) * scale,
+})
+
+const getMobileOpeningScale = (viewportWidth: number, viewportHeight: number) =>
+  clamp(getFrameScale(MOBILE_OPENING_FRAME, viewportWidth, viewportHeight, 24, 96), 0.18, 0.36)
+
+const getOpeningCamera = (
+  isMobile: boolean,
+  viewportWidth: number,
+  viewportHeight: number,
+  scale: number,
+) =>
+  clampCameraPosition(
+    isMobile
+      ? getFramedPosition(MOBILE_OPENING_FRAME, viewportWidth, viewportHeight, scale)
+      : getOpeningPosition(viewportWidth, viewportHeight, scale),
+    scale,
+    viewportWidth,
+    viewportHeight,
+  )
+
+const getMobileAssetFrame = (
+  placement: AssetPlacement,
+  asset: AssetDefinition,
+) => {
+  const width =
+    asset.type === 'product'
+      ? Math.max(asset.width, 1350)
+      : asset.type === 'text' || asset.type === 'survey' || asset.type === 'message'
+        ? Math.max(asset.width, 1100)
+        : asset.width
+  const height =
+    asset.type === 'product'
+      ? Math.max(asset.height, 1150)
+      : asset.type === 'text' || asset.type === 'survey' || asset.type === 'message'
+        ? Math.max(asset.height, 820)
+        : asset.height
+
+  return {
+    x: placement.x + asset.width / 2 - width / 2,
+    y: placement.y + asset.height / 2 - height / 2,
+    width,
+    height,
+  }
+}
+
 const clamp = (value: number, min: number, max: number) =>
   Math.min(max, Math.max(min, value))
 
@@ -124,16 +195,31 @@ export default function CanvasStage({
   const reduceMotion = useReducedMotion()
   const viewportRef = useRef<HTMLElement>(null)
   const gestureStartZoomRef = useRef(zoom)
+  const activeTouchPointersRef = useRef(new Map<number, { x: number; y: number }>())
+  const pinchStartDistanceRef = useRef<number | null>(null)
+  const pinchStartZoomRef = useRef(zoom)
+  const pinchStartCanvasPointRef = useRef<{ x: number; y: number } | null>(null)
+  const lastPanPointRef = useRef<{ x: number; y: number } | null>(null)
   const previousZoomRef = useRef(zoom)
   const cameraPositionRef = useRef({ x: 0, y: 0 })
   const cameraScaleRef = useRef(zoom)
   const nearestTrackedAssetRef = useRef<string | null>(null)
   const [viewport, setViewport] = useState({ width: 1280, height: 800 })
   const hasSetInitialViewRef = useRef(false)
+  const initialViewModeRef = useRef<'desktop' | 'mobile' | null>(null)
   const logoColour = colourCombinations[colourCombo]?.logoColour ?? colourCombinations[0].logoColour
   const fitScale = useMemo(
     () => Math.min((viewport.width - 96) / CANVAS_WIDTH, (viewport.height - 96) / CANVAS_HEIGHT),
     [viewport],
+  )
+  const mobileOpeningScale = useMemo(
+    () => getMobileOpeningScale(viewport.width, viewport.height),
+    [viewport.height, viewport.width],
+  )
+  const openingScale = isMobile ? mobileOpeningScale : zoom
+  const openingCamera = useMemo(
+    () => getOpeningCamera(isMobile, viewport.width, viewport.height, openingScale),
+    [isMobile, openingScale, viewport.height, viewport.width],
   )
   const effectiveScale = isPannedOut ? fitScale : zoom
   const canvasIsContained =
@@ -188,11 +274,22 @@ export default function CanvasStage({
 
   useEffect(() => {
     const updateViewport = () => {
-      setViewport({ width: window.innerWidth, height: window.innerHeight })
+      setViewport({
+        width: window.visualViewport?.width ?? window.innerWidth,
+        height: window.visualViewport?.height ?? window.innerHeight,
+      })
     }
+    const visualViewport = window.visualViewport
+
     updateViewport()
     window.addEventListener('resize', updateViewport)
-    return () => window.removeEventListener('resize', updateViewport)
+    window.addEventListener('orientationchange', updateViewport)
+    visualViewport?.addEventListener('resize', updateViewport)
+    return () => {
+      window.removeEventListener('resize', updateViewport)
+      window.removeEventListener('orientationchange', updateViewport)
+      visualViewport?.removeEventListener('resize', updateViewport)
+    }
   }, [])
 
   const setCameraPosition = useCallback(
@@ -259,6 +356,20 @@ export default function CanvasStage({
     [controls, getPositionForZoom, onZoomChange],
   )
 
+  const endMobilePointerGesture = useCallback((pointerId: number) => {
+    activeTouchPointersRef.current.delete(pointerId)
+    if (activeTouchPointersRef.current.size < 2) {
+      pinchStartDistanceRef.current = null
+      pinchStartCanvasPointRef.current = null
+      onZoomChange(Number(cameraScaleRef.current.toFixed(2)))
+    }
+    if (activeTouchPointersRef.current.size === 1) {
+      lastPanPointRef.current = Array.from(activeTouchPointersRef.current.values())[0]
+    } else if (activeTouchPointersRef.current.size === 0) {
+      lastPanPointRef.current = null
+    }
+  }, [onZoomChange])
+
   useEffect(() => {
     const element = viewportRef.current
     if (!element) {
@@ -289,42 +400,55 @@ export default function CanvasStage({
   }, [viewport.height, viewport.width, zoom, zoomAroundPoint])
 
   useEffect(() => {
-    if (isMobile || hasSetInitialViewRef.current) {
+    const viewMode = isMobile ? 'mobile' : 'desktop'
+    if (hasSetInitialViewRef.current && initialViewModeRef.current === viewMode) {
       return
     }
 
-    const openingPosition = clampCameraPosition(
-      getOpeningPosition(viewport.width, viewport.height, zoom),
-      zoom,
-      viewport.width,
-      viewport.height,
-    )
+    const initialScale = openingScale
+    const openingPosition = openingCamera
     cameraPositionRef.current = openingPosition
-    cameraScaleRef.current = zoom
-    controls.set({ ...openingPosition, scale: zoom })
-    hasSetInitialViewRef.current = true
-  }, [controls, isMobile, viewport.height, viewport.width, zoom])
-
-  useEffect(() => {
-    if (isMobile || homeViewKey === 0) {
-      return
-    }
-
-    const openingPosition = clampCameraPosition(
-      getOpeningPosition(viewport.width, viewport.height, zoom),
-      zoom,
-      viewport.width,
-      viewport.height,
-    )
-    cameraPositionRef.current = openingPosition
-    cameraScaleRef.current = zoom
-    previousZoomRef.current = zoom
+    cameraScaleRef.current = initialScale
+    previousZoomRef.current = initialScale
     void controls.start({
       ...openingPosition,
-      scale: zoom,
+      scale: initialScale,
+      transition: { duration: 0 },
+    })
+    if (isMobile) {
+      onZoomChange(Number(initialScale.toFixed(2)))
+    }
+    hasSetInitialViewRef.current = true
+    initialViewModeRef.current = viewMode
+  }, [controls, isMobile, onZoomChange, openingCamera, openingScale])
+
+  useEffect(() => {
+    if (homeViewKey === 0) {
+      return
+    }
+
+    const homeScale = openingScale
+    const openingPosition = openingCamera
+    cameraPositionRef.current = openingPosition
+    cameraScaleRef.current = homeScale
+    previousZoomRef.current = homeScale
+    void controls.start({
+      ...openingPosition,
+      scale: homeScale,
       transition: reduceMotion ? { duration: 0 } : { duration: 0.5, ease: 'easeInOut' },
     })
-  }, [controls, homeViewKey, isMobile, reduceMotion, viewport.height, viewport.width, zoom])
+    if (isMobile) {
+      onZoomChange(Number(homeScale.toFixed(2)))
+    }
+  }, [
+    controls,
+    homeViewKey,
+    isMobile,
+    onZoomChange,
+    openingCamera,
+    openingScale,
+    reduceMotion,
+  ])
 
   useEffect(() => {
     if (isMobile || !isPannedOut) {
@@ -392,7 +516,7 @@ export default function CanvasStage({
   }, [controls, effectiveScale, isMobile, onPanComplete, panTarget, reduceMotion, viewport.height, viewport.width])
 
   useEffect(() => {
-    if (isMobile || !focusTarget) {
+    if (!focusTarget) {
       return
     }
 
@@ -403,26 +527,48 @@ export default function CanvasStage({
       return
     }
 
+    const framePaddingX = isMobile ? 72 : 0
+    const framePaddingY = isMobile ? 220 : 0
+    const mobileFrame = isMobile ? getMobileAssetFrame(placement, asset) : null
+    const targetScale = isMobile && mobileFrame
+      ? clamp(
+          getFrameScale(
+            mobileFrame,
+            viewport.width,
+            viewport.height,
+            framePaddingX,
+            framePaddingY,
+          ),
+          0.12,
+          0.62,
+        )
+      : effectiveScale
     const target = clampCameraPosition(
-      {
-        x: viewport.width / 2 - (placement.x + asset.width / 2) * effectiveScale,
-        y: viewport.height / 2 - (placement.y + asset.height / 2) * effectiveScale,
-      },
-      effectiveScale,
+      isMobile && mobileFrame
+        ? getFramedPosition(mobileFrame, viewport.width, viewport.height, targetScale)
+        : {
+            x: viewport.width / 2 - (placement.x + asset.width / 2) * targetScale,
+            y: viewport.height / 2 - (placement.y + asset.height / 2) * targetScale,
+          },
+      targetScale,
       viewport.width,
       viewport.height,
     )
     cameraPositionRef.current = target
-    cameraScaleRef.current = effectiveScale
+    cameraScaleRef.current = targetScale
+    previousZoomRef.current = targetScale
     void controls
       .start({
         ...target,
-        scale: effectiveScale,
+        scale: targetScale,
         transition: reduceMotion
           ? { duration: 0 }
           : { duration: 0.6, ease: 'easeInOut' },
       })
       .then(onFocusComplete)
+    if (isMobile) {
+      onZoomChange(Number(targetScale.toFixed(2)))
+    }
   }, [
     controls,
     effectiveScale,
@@ -430,40 +576,133 @@ export default function CanvasStage({
     isMobile,
     layout,
     onFocusComplete,
+    onZoomChange,
     reduceMotion,
     viewport.height,
     viewport.width,
   ])
-
-  if (isMobile) {
-    return (
-      <main className={styles.mobileStage} aria-label="HINC AS canvas content">
-        <LogoAnchor x={0} y={0} logoColour={logoColour} className={styles.mobileLogo} autoPlay />
-        {assets.map((asset, index) => {
-          const placement = layout.find((entry) => entry.id === asset.id)
-          return (
-            <CanvasAsset
-              key={`${asset.id}-${resetKey}`}
-              asset={asset}
-              x={placement?.x ?? 0}
-              y={placement?.y ?? 0}
-              rotation={0}
-              activeTool={activeTool}
-              isErased={erasedIds.has(asset.id)}
-              index={index}
-              isMobile
-            />
-          )
-        })}
-      </main>
-    )
-  }
 
   return (
     <main
       ref={viewportRef}
       className={styles.viewport}
       aria-label="HINC AS pannable canvas"
+      onPointerDown={(event) => {
+        if (!isMobile || event.pointerType !== 'touch') {
+          return
+        }
+
+        activeTouchPointersRef.current.set(event.pointerId, {
+          x: event.clientX,
+          y: event.clientY,
+        })
+        if (activeTouchPointersRef.current.size === 1) {
+          lastPanPointRef.current = { x: event.clientX, y: event.clientY }
+        }
+        if (activeTouchPointersRef.current.size === 2) {
+          const points = Array.from(activeTouchPointersRef.current.values())
+          const center = {
+            x: (points[0].x + points[1].x) / 2,
+            y: (points[0].y + points[1].y) / 2,
+          }
+          const currentPosition = cameraPositionRef.current
+          const currentScale = cameraScaleRef.current
+          pinchStartDistanceRef.current = Math.hypot(
+            points[0].x - points[1].x,
+            points[0].y - points[1].y,
+          )
+          pinchStartZoomRef.current = currentScale
+          pinchStartCanvasPointRef.current = {
+            x: (center.x - currentPosition.x) / currentScale,
+            y: (center.y - currentPosition.y) / currentScale,
+          }
+          lastPanPointRef.current = null
+        }
+      }}
+      onPointerMove={(event) => {
+        if (
+          !isMobile ||
+          event.pointerType !== 'touch' ||
+          !activeTouchPointersRef.current.has(event.pointerId)
+        ) {
+          return
+        }
+
+        const nextPoint = {
+          x: event.clientX,
+          y: event.clientY,
+        }
+        const previousPoint = activeTouchPointersRef.current.get(event.pointerId)
+        activeTouchPointersRef.current.set(event.pointerId, nextPoint)
+
+        if (activeTouchPointersRef.current.size === 1) {
+          event.preventDefault()
+          const lastPoint = lastPanPointRef.current ?? previousPoint ?? nextPoint
+          const currentScale = cameraScaleRef.current
+          const nextPosition = clampCameraPosition(
+            {
+              x: cameraPositionRef.current.x + nextPoint.x - lastPoint.x,
+              y: cameraPositionRef.current.y + nextPoint.y - lastPoint.y,
+            },
+            currentScale,
+            viewport.width,
+            viewport.height,
+          )
+          cameraPositionRef.current = nextPosition
+          controls.set({ ...nextPosition, scale: currentScale })
+          lastPanPointRef.current = nextPoint
+          return
+        }
+
+        if (
+          activeTouchPointersRef.current.size < 2 ||
+          !pinchStartDistanceRef.current ||
+          !pinchStartCanvasPointRef.current
+        ) {
+          return
+        }
+
+        event.preventDefault()
+        const points = Array.from(activeTouchPointersRef.current.values())
+        const nextDistance = Math.hypot(
+          points[0].x - points[1].x,
+          points[0].y - points[1].y,
+        )
+        const center = {
+          x: (points[0].x + points[1].x) / 2,
+          y: (points[0].y + points[1].y) / 2,
+        }
+        const nextZoom = Number(
+          clamp(
+            pinchStartZoomRef.current * (nextDistance / pinchStartDistanceRef.current),
+            MIN_ZOOM,
+            MAX_ZOOM,
+          ).toFixed(3),
+        )
+        const nextPosition = clampCameraPosition(
+          {
+            x: center.x - pinchStartCanvasPointRef.current.x * nextZoom,
+            y: center.y - pinchStartCanvasPointRef.current.y * nextZoom,
+          },
+          nextZoom,
+          viewport.width,
+          viewport.height,
+        )
+        cameraPositionRef.current = nextPosition
+        cameraScaleRef.current = nextZoom
+        previousZoomRef.current = nextZoom
+        controls.set({ ...nextPosition, scale: nextZoom })
+      }}
+      onPointerUp={(event) => {
+        if (event.pointerType === 'touch') {
+          endMobilePointerGesture(event.pointerId)
+        }
+      }}
+      onPointerCancel={(event) => {
+        if (event.pointerType === 'touch') {
+          endMobilePointerGesture(event.pointerId)
+        }
+      }}
       onWheel={(event) => {
         event.preventDefault()
         const direction = event.deltaY > 0 ? -1 : 1
@@ -481,7 +720,11 @@ export default function CanvasStage({
           width: CANVAS_WIDTH,
           height: CANVAS_HEIGHT,
         }}
-        drag={!isPannedOut && !canvasIsContained}
+        initial={{
+          ...openingCamera,
+          scale: openingScale,
+        }}
+        drag={!isMobile && !isPannedOut && !canvasIsContained}
         dragMomentum={false}
         dragElastic={0.04}
         dragConstraints={{
@@ -539,7 +782,7 @@ export default function CanvasStage({
                 activeTool={activeTool}
                 isErased={erasedIds.has(placement.id)}
                 index={index}
-                isMobile={false}
+                isMobile={isMobile}
               />
             )
           })}

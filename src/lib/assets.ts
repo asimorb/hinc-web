@@ -169,8 +169,8 @@ export const logoAnchors = [
   },
   {
     id: 'hinc-logo-upper-opening',
-    x: 5210,
-    y: 1210,
+    x: 5150,
+    y: 1450,
     width: 598,
     height: 302,
   },

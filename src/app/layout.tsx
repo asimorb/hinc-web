@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import {
   Cardo,
   DotGothic16,
@@ -129,6 +129,13 @@ const fontVariables = [
 export const metadata: Metadata = {
   title: 'HINC AS',
   description: 'A Trondheim-based design and technology studio. From here.',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: 'cover',
 }
 
 export default function RootLayout({

@@ -21,7 +21,7 @@
   pointer-events: auto;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px), (pointer: coarse) {
   .overview {
     display: none;
   }

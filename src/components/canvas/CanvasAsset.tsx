@@ -58,7 +58,7 @@ export default function CanvasAsset({
   const [messageSent, setMessageSent] = useState(false)
   const isDraggable = activeTool === 'select' && !isMobile
   const canErase = activeTool === 'erase' && asset.isErasable && !isMobile
-  const isInteractive = isDraggable || canErase || isMobile
+  const isInteractive = isDraggable || canErase
   const usesPaletteMask = asset.src && asset.id.startsWith('pix-planet-')
   const product = asset.type === 'product' ? getProduct(asset.id) : undefined
   const classes = [
@@ -72,15 +72,13 @@ export default function CanvasAsset({
   ]
     .filter(Boolean)
     .join(' ')
-  const assetStyle = isMobile
-    ? ({ width: '100%', minHeight: asset.height } as const)
-    : ({
-        left: x,
-        top: y,
-        width: asset.width,
-        height: asset.height,
-        rotate: reduceMotion ? 0 : rotation,
-      } as const)
+  const assetStyle = {
+    left: x,
+    top: y,
+    width: asset.width,
+    height: asset.height,
+    rotate: reduceMotion || isMobile ? 0 : rotation,
+  } as const
   const maskUrl = `url(#erase-mask-${maskId})`
   const assetSurfaceStyle =
     eraseStrokes.length > 0

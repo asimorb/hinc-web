@@ -5,13 +5,14 @@
   touch-action: none;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 900px), (pointer: coarse) {
   .snap {
-    right: var(--space-2);
-    bottom: var(--space-2);
-    left: var(--space-2) !important;
-    top: auto !important;
-    width: auto;
-    transform: none !important;
+    left: 50% !important;
+    right: auto;
+    top: calc(22px + env(safe-area-inset-top, 0px)) !important;
+    bottom: auto;
+    width: min(250px, calc(100vw - 96px));
+    transform: translateX(-50%) !important;
+    touch-action: auto;
   }
 }

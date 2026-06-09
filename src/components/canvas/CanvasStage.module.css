@@ -3,6 +3,7 @@
   inset: 0;
   overflow: hidden;
   background: var(--color-bg);
+  touch-action: none;
 }
 
 .stage {
@@ -35,22 +36,8 @@
   height: auto;
 }
 
-.mobileStage {
-  display: grid;
-  gap: var(--space-6);
-  padding: var(--space-8) var(--space-3) var(--space-16);
-  background: var(--color-bg);
-  color: var(--color-text);
-}
-
-.mobileLogo {
-  position: relative !important;
-  left: auto !important;
-  top: auto !important;
-  width: min(280px, 82vw);
-}
-
-.mobileLogo svg {
-  width: 100%;
-  height: auto;
+@media (max-width: 900px), (pointer: coarse) {
+  .stage {
+    cursor: grab;
+  }
 }
