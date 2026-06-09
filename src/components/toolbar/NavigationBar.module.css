@@ -1,0 +1,130 @@
+.nav {
+  position: fixed;
+  left: calc(36px + env(safe-area-inset-left, 0px));
+  top: 50%;
+  z-index: 35;
+  display: grid;
+  gap: 6px;
+  transform: translateY(-50%);
+}
+
+.nav button {
+  display: grid;
+  width: 41px;
+  height: 34px;
+  min-width: 0;
+  min-height: 0;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-bg);
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  font-synthesis-weight: none;
+  font-weight: var(--weight-display);
+  text-transform: var(--case-display);
+  cursor: pointer;
+}
+
+.icon {
+  display: block;
+  width: 20px;
+  height: 20px;
+  background: currentColor;
+  -webkit-mask: var(--icon-url) center / contain no-repeat;
+  mask: var(--icon-url) center / contain no-repeat;
+}
+
+.zoom {
+  display: grid;
+  gap: 6px;
+}
+
+.zoom button {
+  font-family: var(--font-body);
+  font-size: 1.16rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.itemSlider {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  padding: 5px 0 2px;
+}
+
+.itemSlider::before {
+  position: absolute;
+  top: 6px;
+  bottom: 5px;
+  left: 50%;
+  width: 1px;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      var(--color-accent) 0,
+      var(--color-accent) 3px,
+      transparent 3px,
+      transparent 8px
+    );
+  content: '';
+  transform: translateX(-50%);
+}
+
+.sliderDot {
+  position: relative;
+  z-index: 3;
+  width: 7px !important;
+  height: 7px !important;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 999px;
+  background: var(--color-accent);
+  transition: transform 160ms ease;
+}
+
+.sliderDot:hover,
+.sliderDot:focus-visible,
+.sliderDot[aria-current='location'] {
+  transform: scale(1.9);
+}
+
+@media (max-width: 760px) {
+  .nav {
+    left: calc(16px + env(safe-area-inset-left, 0px));
+    top: calc(16px + env(safe-area-inset-top, 0px));
+    grid-auto-flow: column;
+    max-width: calc(100vw - var(--space-4));
+    overflow-x: auto;
+    transform: none;
+  }
+
+  .itemSlider {
+    grid-auto-flow: column;
+    align-items: center;
+    padding: 0 10px;
+  }
+
+  .itemSlider::before {
+    top: 50%;
+    bottom: auto;
+    left: 7px;
+    right: 7px;
+    width: auto;
+    height: 2px;
+    background:
+      repeating-linear-gradient(
+        to right,
+        var(--color-accent) 0,
+        var(--color-accent) 3px,
+        transparent 3px,
+        transparent 6px
+      );
+    transform: translateY(-50%);
+  }
+
+}

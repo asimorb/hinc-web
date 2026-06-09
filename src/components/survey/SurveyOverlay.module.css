@@ -1,0 +1,96 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: var(--space-3);
+  background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+}
+
+.panel {
+  width: min(760px, 100%);
+  max-height: min(760px, calc(100vh - var(--space-6)));
+  overflow: auto;
+  padding: var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--color-text), transparent 68%);
+  border-radius: 8px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
+}
+
+.panel header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.panel h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.4rem + 1.8vw, 3.4rem);
+  font-synthesis-weight: none;
+  font-weight: var(--weight-display);
+  line-height: 1;
+}
+
+.panel header button,
+.panel form > button {
+  border: 1px solid color-mix(in srgb, var(--color-text), transparent 72%);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+.panel header button {
+  width: 40px;
+  height: 40px;
+  font-size: 1.5rem;
+}
+
+.panel form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.panel label {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.panel label span {
+  font-family: var(--font-body);
+  font-size: clamp(0.95rem, 0.88rem + 0.2vw, 1.1rem);
+  font-synthesis-weight: none;
+  font-weight: var(--weight-meta);
+}
+
+.panel textarea {
+  width: 100%;
+  resize: vertical;
+  padding: var(--space-2);
+  border: 1px solid color-mix(in srgb, var(--color-text), transparent 72%);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-bg), white 8%);
+  color: var(--color-text);
+  font: inherit;
+  font-family: var(--font-body);
+  font-synthesis-weight: none;
+  font-weight: var(--weight-body);
+  line-height: 1.5;
+}
+
+.panel small {
+  color: var(--color-accent);
+  font-size: 0.82rem;
+}
+
+.panel form > button {
+  justify-self: start;
+  padding: 12px 16px;
+  font-family: var(--font-body);
+}

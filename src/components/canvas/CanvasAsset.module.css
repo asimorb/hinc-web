@@ -1,0 +1,385 @@
+.asset {
+  position: absolute;
+  color: var(--color-text);
+  pointer-events: none;
+  touch-action: none;
+}
+
+.interactive {
+  pointer-events: auto;
+}
+
+.asset:focus-within {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}
+
+.assetSurface {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.paletteMask {
+  width: 100%;
+  height: 100%;
+  background: var(--color-text);
+  -webkit-mask: var(--asset-mask) center / contain no-repeat;
+  mask: var(--asset-mask) center / contain no-repeat;
+}
+
+.photo {
+  z-index: 4;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+.graphic {
+  z-index: 3;
+  overflow: visible;
+  mix-blend-mode: multiply;
+}
+
+.graphic .image {
+  object-position: center;
+}
+
+.text {
+  z-index: 9;
+}
+
+.survey {
+  z-index: 10;
+}
+
+.message {
+  z-index: 11;
+}
+
+.product {
+  z-index: 12;
+}
+
+.img01_street {
+  z-index: 10;
+}
+
+.img03_sky {
+  z-index: 5;
+}
+
+.img02_columns {
+  z-index: 6;
+}
+
+.scr_anteater_01 {
+  z-index: 2;
+}
+
+.scr_anteater_03 {
+  z-index: 1;
+}
+
+.pix_planet_01 {
+  opacity: 0.95;
+}
+
+.etymology {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  color: var(--color-text);
+  line-height: 0.92;
+  text-transform: var(--case-display);
+}
+
+.etymology span {
+  display: flex;
+  align-items: baseline;
+  gap: 2.25ch;
+  white-space: nowrap;
+}
+
+.etymology strong {
+  font-family: var(--font-display);
+  font-size: clamp(6.4rem, 4.2rem + 4.8vw, 12.8rem);
+  font-synthesis-weight: none;
+  font-style: italic;
+  font-weight: var(--weight-display);
+  text-transform: var(--case-display);
+}
+
+.etymology em {
+  font-family: var(--font-body);
+  font-size: clamp(4.4rem, 2.7rem + 3.6vw, 10rem);
+  font-synthesis-weight: none;
+  font-style: normal;
+  font-weight: var(--weight-body);
+  line-height: 1;
+  text-transform: var(--case-display);
+}
+
+.bodyStatement {
+  max-width: 35ch;
+  margin: 20;
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 1.75rem + 1.4vw, 4.3rem);
+  font-synthesis-weight: none;
+  font-weight: var(--weight-display);
+  line-height: 1.08;
+  text-align: center;
+  text-transform: var(--case-display);
+}
+
+.quote {
+  margin: 0;
+  color: var(--color-text);
+}
+
+.quote blockquote {
+  max-width: 28ch;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 1.75rem + 1.4vw, 4.3rem);
+  font-synthesis-weight: none;
+  font-weight: var(--weight-display);
+  line-height: 1.08;
+  text-transform: var(--case-display);
+}
+
+.quote figcaption {
+  margin-top: var(--space-2);
+  padding-right: var(--space-4);
+  font-family: var(--font-serif);
+  font-size: clamp(1.8rem, 1.25rem + 1vw, 3rem);
+  font-style: italic;
+  line-height: 1;
+  text-align: right;
+}
+
+.surveyPrompt {
+  width: 100%;
+  height: 100%;
+  color: var(--color-text);
+  pointer-events: auto;
+}
+
+.surveyPrompt span {
+  display: none;
+}
+
+.surveyPrompt h2 {
+  max-width: 22ch;
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-serif);
+  font-size: clamp(2.2rem, 1.55rem + 1.4vw, 4rem);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.05;
+  text-transform: var(--case-display);
+}
+
+.responseField {
+  position: relative;
+  width: min(560px, 100%);
+}
+
+.responseField[data-empty='true']::before {
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  width: 1px;
+  height: 1.25em;
+  background: currentColor;
+  content: '';
+  pointer-events: none;
+  animation: blinkCursor 1s steps(2, start) infinite;
+}
+
+.responseField:focus-within::before {
+  display: none;
+}
+
+.surveyPrompt textarea {
+  display: block;
+  width: 100%;
+  min-height: 150px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 0.9rem + 0.28vw, 1.25rem);
+  font-synthesis-weight: none;
+  font-weight: var(--weight-body);
+  line-height: 1.45;
+  resize: vertical;
+}
+
+.surveyPrompt textarea:focus {
+  outline: 0;
+}
+
+.surveyPrompt small {
+  display: block;
+  width: min(560px, 100%);
+  margin-top: var(--space-1);
+  font-family: var(--font-body);
+  font-size: clamp(0.8rem, 0.74rem + 0.16vw, 0.95rem);
+  font-synthesis-weight: none;
+  font-weight: var(--weight-meta);
+  text-align: right;
+}
+
+.survey:focus-within {
+  outline: 0;
+}
+
+.messageField {
+  width: 100%;
+  height: 100%;
+  color: var(--color-text);
+  pointer-events: auto;
+}
+
+.messageField label {
+  display: grid;
+  gap: 160px;
+}
+
+.messageField label > span {
+  font-family: var(--font-serif);
+  font-size: clamp(2.4rem, 1.75rem + 1.4vw, 4.3rem);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.04;
+  text-transform: var(--case-display);
+}
+
+.messageLine {
+  position: relative;
+  display: grid;
+  align-items: end;
+  min-height: 76px;
+  border-bottom: 3px solid currentColor;
+}
+
+.messageLine textarea {
+  display: block;
+  width: calc(100% - 90px);
+  min-height: 68px;
+  padding: 0 0 8px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: clamp(1.4rem, 1.1rem + 0.58vw, 2rem);
+  font-synthesis-weight: none;
+  font-weight: var(--weight-body);
+  line-height: 1.18;
+  resize: none;
+}
+
+.messageLine textarea:focus {
+  outline: 0;
+}
+
+.messageLine small {
+  position: absolute;
+  right: 10px;
+  bottom: 9px;
+  font-family: var(--font-body);
+  font-size: clamp(1.2rem, 0.98rem + 0.42vw, 1.7rem);
+  font-synthesis-weight: none;
+  font-weight: var(--weight-meta);
+  line-height: 1;
+}
+
+.messageField button {
+  margin-top: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: clamp(0.9rem, 0.78rem + 0.28vw, 1.15rem);
+  font-synthesis-weight: none;
+  font-weight: var(--weight-meta);
+  line-height: 1;
+  text-decoration: underline;
+  text-underline-offset: 0.24em;
+  text-transform: var(--case-display);
+  cursor: pointer;
+}
+
+.messageField:focus-within {
+  outline: 0;
+}
+
+@keyframes blinkCursor {
+  0%,
+  45% {
+    opacity: 1;
+  }
+
+  46%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.eraser {
+  cursor: cell;
+  user-select: none;
+}
+
+.eraser .assetSurface {
+  pointer-events: none;
+}
+
+.eraseMaskSvg {
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 760px) {
+  .asset {
+    position: relative;
+    left: auto;
+    top: auto;
+    height: auto;
+    min-height: unset;
+    transform: none !important;
+    touch-action: auto;
+  }
+
+  .image {
+    height: auto;
+  }
+
+  .graphic {
+    display: none;
+  }
+
+  .etymology {
+    font-size: clamp(2.5rem, 13vw, 4.2rem);
+  }
+
+  .quote blockquote,
+  .surveyPrompt::after {
+    font-size: clamp(1.5rem, 8vw, 2.5rem);
+  }
+}

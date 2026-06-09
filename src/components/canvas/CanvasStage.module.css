@@ -1,0 +1,56 @@
+.viewport {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+.stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: grab;
+  transform-origin: top left;
+  will-change: transform;
+}
+
+.stage:active {
+  cursor: grabbing;
+}
+
+.scaleLayer {
+  position: absolute;
+  inset: 0;
+  transform-origin: top left;
+}
+
+.logoAnchor {
+  z-index: 8;
+}
+
+.logoAnchor svg {
+  width: 840px;
+  height: auto;
+}
+
+.mobileStage {
+  display: grid;
+  gap: var(--space-6);
+  padding: var(--space-8) var(--space-3) var(--space-16);
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.mobileLogo {
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  width: min(280px, 82vw);
+}
+
+.mobileLogo svg {
+  width: 100%;
+  height: auto;
+}

@@ -1,0 +1,17 @@
+.snap {
+  position: fixed;
+  z-index: 40;
+  width: 238px;
+  touch-action: none;
+}
+
+@media (max-width: 760px) {
+  .snap {
+    right: var(--space-2);
+    bottom: var(--space-2);
+    left: var(--space-2) !important;
+    top: auto !important;
+    width: auto;
+    transform: none !important;
+  }
+}
