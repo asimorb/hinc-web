@@ -24,8 +24,8 @@ const getViewportMobileState = () => {
   const hasMobileUserAgent = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)
 
   return (
-    viewportWidth <= 1200 ||
-    screenWidth <= 1200 ||
+    viewportWidth <= 900 ||
+    screenWidth <= 900 ||
     hasMobilePointer ||
     hasMobileUserAgent
   )
